@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang='es'>
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+    	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+    	<title>Node.Js Chat!</title>
+
+
+    	<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+			
+		<style>
+			#contenido{
+				height: 70%;
+			}
+
+			#send-message{
+				text-align: center;
+			}
+
+			#chat{
+				overflow: auto;
+				max-height: 200px;
+			}
+
+		</style>
+		
+
+	<body>
+
+		<div class="container">
+			<header class="page-header">
+				<h1>Chat Node.js</h1>
+			</header>
+
+			<div class="row" id='contenido'>
+				<div class="col-md-2"></div>
+				<div class="col-md-6" id="chat-content">
+					<div class="panel panel-success">
+						<div class="panel-heading">Chat</div>
+						<div class="panel-body" id='chat'></div>
+					</div>
+
+					<form id='formMessage'>
+						<div class="form-group">
+							<input type="text" class='form-control' id='message' placeholder='Escribe un mensaje...'>
+						</div>
+
+						<button class='btn btn-primary' type='submit'>Enviar</button>
+					</form>
+
+						
+				</div>
+			</div>
+		</div>
+		
+
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		
+		<script>
+			$(document).ready(function(){
+
+				var socket 			= io.connect();
+				var $form 			= $("#formMessage");
+				var $message 		= $("#message");
+				var $chat 			= $("#chat");
+
+
+				$form.submit(function(e){
+
+					e.preventDefault();
+
+					if($message.val() != '')
+					{
+						socket.emit('sendMessage', $message.val() );
+						$message.val('');
+					}
+				});
+					
+				
+				socket.on('newMessage', function(data)
+				{
+					$chat.append(' - '+data.msg+"<br>");
+
+					var altura = $chat.height();
+
+					console.log(altura);
+
+					$chat.scrollTop(altura*1000);
+				});
+
+			});
+		</script>
+
+	</head>
+	</body>
+</html>
