@@ -15,7 +15,7 @@
 			
 		<style>
 			#contenido{
-				height: 70%;
+				display: none;
 			}
 
 			#send-message{
@@ -25,6 +25,15 @@
 			#chat{
 				overflow: auto;
 				max-height: 200px;
+			}
+
+			#nickContainer{
+				margin: 0 auto;
+			}
+
+			#login-error{
+				display: none;
+				margin: 1em;
 			}
 
 		</style>
@@ -37,9 +46,33 @@
 				<h1>Chat Node.js</h1>
 			</header>
 
+			
+			<div class='row' id='nickContainer'>
+				<div class="col-md-4 col-md-offset-4">
+					<div class="form-group">
+						<input type="text" id="nickname" class='form-control' placeholder='Ingrese nombre de usuario'>
+					</div>
+				
+					<button class='btn btn-primary col-xs-12' id='setNick'>Entrar</button>
+				</div>
+				
+			</div>
+			
+			<div class="row" id='login-error'>
+				<div class="col-md-6 col-md-offset-3">
+				
+					<div class="alert alert-warning alert-dismissible" role="alert">
+						<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<strong>Alerta!</strong> este nombre de usuario no se encuentra disponible.
+					</div>
+				</div>
+			</div>
+				
+
 			<div class="row" id='contenido'>
-				<div class="col-md-2"></div>
-				<div class="col-md-6" id="chat-content">
+
+				<div class="col-md-6 col-md-offset-2" id="chat-content">
+
 					<div class="panel panel-success">
 						<div class="panel-heading">Chat</div>
 						<div class="panel-body" id='chat'></div>
@@ -50,12 +83,30 @@
 							<input type="text" class='form-control' id='message' placeholder='Escribe un mensaje...'>
 						</div>
 
-						<button class='btn btn-primary' type='submit'>Enviar</button>
+						<button class='btn btn-primary col-xs-12' type='submit'>Enviar</button>
 					</form>
-
 						
 				</div>
+
+
+				<div class="col-md-2">
+
+					<div class="panel panel-info">
+
+						<div class="panel-heading">
+							Usuarios
+						</div>
+
+						<div class="panel-body" id='users'>
+						</div>
+
+					</div>
+
+				</div>
 			</div>
+
+
+
 		</div>
 		
 
@@ -68,32 +119,66 @@
 			$(document).ready(function(){
 
 				var socket 			= io.connect();
-				var $form 			= $("#formMessage");
-				var $message 		= $("#message");
-				var $chat 			= $("#chat");
+				var form 			= $("#formMessage");
+				var message 		= $("#message");
+				var chat 			= $("#chat");
+
+				var nickname 		= $("#nickname");
+				var users 			= $("#users");
 
 
-				$form.submit(function(e){
+				form.submit(function(e){
 
 					e.preventDefault();
 
-					if($message.val() != '')
+					if(message.val() != '')
 					{
-						socket.emit('sendMessage', $message.val() );
-						$message.val('');
+						socket.emit('sendMessage', message.val() );
+						message.val('');
 					}
+				});
+
+				$(document).on('click', '#setNick', function(e){
+
+					socket.emit('newUser', nickname.val(), function(data){
+
+						if(data)
+						{
+							$("#nickContainer").hide();
+							$("#login-error").hide();
+							$("#contenido").show();
+						}
+						else
+						{
+							$("#login-error").show();
+						}
+					});
+
 				});
 					
 				
 				socket.on('newMessage', function(data)
 				{
-					$chat.append(' - '+data.msg+"<br>");
+					chat.append(data.nick+': '+data.msg+"<br>");
 
-					var altura = $chat.height();
+					var altura = chat.height();
 
 					console.log(altura);
 
-					$chat.scrollTop(altura*1000);
+					chat.scrollTop(altura*1000);
+				});
+
+
+				socket.on('usernames', function(data){
+
+					var usernamesString = '';
+
+					for(var username in data){
+						usernamesString += username + "<br>";
+					}
+
+					users.html(usernamesString);
+
 				});
 
 			});
